@@ -1,34 +1,53 @@
-name: Build LLVM Obfuscator
+- name: Clean build dir
+  run: |
+    rm -rf build
+    mkdir build
+    cd build
+    cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+    ninja
+
+name: Build Obfuscator LLVM 4.0
 
 on:
-  workflow_dispatch:
   push:
-    branches:
-      - master
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
 
 jobs:
-  build-obfuscator:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Install dependencies
-      run: |
-        sudo apt update
-        sudo apt install -y cmake ninja-build python3 g++ git
+    - name: Checkout Repository
+      uses: actions/checkout@v3
 
-    - name: Clone LLVM Obfuscator (llvm-4.0 branch)
+    - name: Install Dependencies
       run: |
-        git clone --depth=1 --branch llvm-4.0 https://github.com/obfuscator-llvm/obfuscator.git obf-src
+        sudo apt-get update
+        sudo apt-get install -y cmake ninja-build g++ python3 zlib1g-dev libedit-dev libncurses5-dev libxml2-dev libffi-dev swig doxygen
 
-    - name: Build LLVM with obfuscation
+    - name: Create Build Directory
+      run: mkdir llvm-build
+
+    - name: Configure with CMake
+      working-directory: llvm-build
       run: |
-        mkdir build
-        cd build
-        cmake ../obf-src -G Ninja -DCMAKE_BUILD_TYPE=Release
-        ninja
+        cmake ../obf-src \
+          -G Ninja \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DLLVM_INCLUDE_TESTS=OFF \
+          -DLLVM_ENABLE_OCAMLDOC=OFF \
+          -DLLVM_TARGETS_TO_BUILD="X86" \
+          -DLLVM_ENABLE_PROJECTS="clang"
 
-    - name: Upload Clang Obfuscator Binaries
-      uses: actions/upload-artifact@v4
+    - name: Build with Ninja
+      working-directory: llvm-build
+      run: ninja
+
+    - name: Upload Build Artifact
+      uses: actions/upload-artifact@v3
       with:
-        name: clang-obf
-        path: build/bin/
+        name: obfuscator-llvm
+        path: llvm-build/bin/
