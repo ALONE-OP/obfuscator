@@ -2,9 +2,8 @@ name: Build LLVM Obfuscator
 
 on:
   push:
-    branches:
-      - master
-  workflow_dispatch: # allows manual run from GitHub UI
+    branches: [master]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -19,8 +18,9 @@ jobs:
         sudo apt update
         sudo apt install -y cmake ninja-build python3 g++ git
 
-    - name: Build LLVM Obfuscator
+    - name: Prepare build
       run: |
+        cd llvm
         mkdir build
         cd build
         cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
