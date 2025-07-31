@@ -1,10 +1,10 @@
 name: Build LLVM Obfuscator
 
 on:
-  workflow_dispatch:     # manual trigger
+  workflow_dispatch:
   push:
     branches:
-      - master            # or your working branch
+      - master
 
 jobs:
   build-obfuscator:
@@ -18,18 +18,17 @@ jobs:
 
     - name: Clone LLVM Obfuscator (llvm-4.0 branch)
       run: |
-        git clone --depth=1 --branch llvm-4.0 https://github.com/obfuscator-llvm/obfuscator.git
+        git clone --depth=1 --branch llvm-4.0 https://github.com/obfuscator-llvm/obfuscator.git obf-src
 
     - name: Build LLVM with obfuscation
       run: |
-        cd obfuscator
-        mkdir build && cd build
-        cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
+        mkdir build
+        cd build
+        cmake ../obf-src -G Ninja -DCMAKE_BUILD_TYPE=Release
         ninja
 
     - name: Upload Clang Obfuscator Binaries
       uses: actions/upload-artifact@v4
       with:
         name: clang-obf
-        path: obfuscator/build/bin/
-        
+        path: build/bin/
