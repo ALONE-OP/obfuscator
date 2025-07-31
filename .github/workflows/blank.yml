@@ -1,11 +1,3 @@
-- name: Clean build dir
-  run: |
-    rm -rf build
-    mkdir build
-    cd build
-    cmake .. -G Ninja -DCMAKE_BUILD_TYPE=Release
-    ninja
-
 name: Build Obfuscator LLVM 4.0
 
 on:
